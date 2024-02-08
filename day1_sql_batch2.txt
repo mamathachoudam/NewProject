@@ -1,4 +1,4 @@
-#database creation
+
 create database customers_data;
 
 
