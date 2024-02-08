@@ -1,0 +1,241 @@
+#database creation
+create database customers_data;
+
+
+#table creation
+create external table customers_data.customers
+(id int, first_name string, last_name string, full_name string)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+LOCATION 's3://karthilknani/customers/'
+TBLPROPERTIES ('skip.header.line.count'='1')
+
+
+
+
+
+
+Datatypes
+
+
+varchar- alphanum
+int
+number
+double
+Boolean/smallint
+timestamp
+date
+float
+DATETIME
+TIME
+bigint
+
+
+
+
+DDL- data DEfinition Language
+
+
+
+
+Create
+Drop- deletes an entire table from database
+Alter- alter any existing object of a table, or add a new column to a tble
+SELECT
+TRUNCATE- its deletes the table contents but not trucating
+
+
+
+
+ALTER table customers_data.customers
+ADD COLUMNS (customer_type string);
+
+
+drop table customers
+
+
+DML
+
+
+DataManuplation Language
+
+
+INSERT
+
+
+
+create external table customers_data.customers_dummy
+(id int, first_name string, last_name string, full_name string)
+LOCATION 's3://karthilknani/dummy/';
+
+
+INSERT into customers_dummy (id,first_name,last_name,full_name) values
+(101,'mamatha', 'choudam', 'Mamatha Choudam')
+
+
+
+UPDATE
+#don't try now
+
+
+#update the last_name to Choudam where the current last_name is Adams
+#applicable for only transactional table/apache iceberg table
+UPDATE customers_data.customers set last_name='Choudam' where last_name='Adams';
+
+
+DELETE
+
+
+#don't try now
+#applicable for only transactional table/apache iceberg table
+# delete all the rows which have lastname as Adams and id=305
+DELETE from customers where last_name='Adams' and id=305
+
+
+DCL
+
+
+GRANT
+
+
+REVOKE
+
+
+local user having- read privilege
+
+write rights to local user via grant command
+GRANT UPDATE,DELETE ON customers TO local;
+
+REVOKE UPDATE,DELETE ON customers FROM local;
+
+
+
+
+
+
+
+logical operators
+
+
+SELECT * FROM "customers_data"."customers"
+where last_name='Adams' and id=305 limit 10;
+
+AND - get the rows which satisfies all the conditions
+
+SELECT * FROM "customers_data"."customers"
+where last_name='Adams' and last_name='Abel' limit 10;
+
+OR -get the rows which satisfies any one conditions
+
+
+
+
+#SElects all the rows whose last name not in given list
+SELECT * FROM "customers_data"."customers"
+where last_name NOT IN ('Adams', 'Allen')
+
+#SElects all the rows whose last name in given list
+SELECT * FROM "customers_data"."customers"
+where last_name IN ('Adams', 'Allen')
+
+
+
+
+
+#comparison operators>, <, !=,=,>=, <=
+SELECT * FROM "customers_data"."customers" where id>350
+
+
+#between is to consider values in a particular range
+SELECT * FROM "customers_data"."customers" where id between 300 and 350
+
+
+
+PRIMARY KEY - duplicates, no null values, UNIQUE + NOT NULL
+
+drop table customers_dummy
+
+create external table customers_data.customers_dummy
+(id int primary key, first_name string, last_name string, full_name string)
+LOCATION 's3://karthilknani/dummy/';
+
+
+
+
+
+INSERT into customers_dummy (id,first_name,last_name,full_name) values
+(101,'mamatha', 'choudam', 'Mamatha Choudam')
+(101,'sai', 'choudam', 'sai Choudam')
+
+
+
+INSERT into customers_dummy (id,first_name,last_name,full_name) values
+(101,'mamatha', 'choudam', 'Mamatha Choudam')
+(null,'sai', 'choudam', 'sai Choudam')
+
+
+UNIQUE- allows one null value, not allows duplicates
+
+create external table customers_data.customers_dummy
+(id int UNIQUE, first_name string, last_name string, full_name string, gender string,
+LOCATION 's3://karthilknani/dummy/';
+
+
+
+
+
+INSERT into customers_dummy (id,first_name,last_name,full_name) values
+(101,'mamatha', 'choudam', 'Mamatha Choudam')
+(101,'sai', 'choudam', 'sai Choudam')
+
+
+
+INSERT into customers_dummy (id,first_name,last_name,full_name) values
+(101,'mamatha', 'choudam', 'Mamatha Choudam')
+(null,'sai', 'choudam', 'sai Choudam')
+
+INSERT into customers_dummy (id,first_name,last_name,full_name) values
+(null,'manasa', 'choudam', 'manasa Choudam')
+
+
+
+
+#check
+create external table customers_data.customers_dummy
+(id int , first_name string, last_name string, full_name string, gender string
+check(gender in ('Male', 'Female')))
+LOCATION 's3://karthilknani/dummy/';
+
+
+INSERT into customers_dummy (id,first_name,last_name,full_name) values
+(101,'manasa', 'choudam', 'manasa Choudam', 'Female')
+(102,'Phani', 'dhar', 'Phanidhar ', 'Unknown')
+
+
+
+
+
+#NOT NULL
+
+create external table customers_data.customers_dummy
+(id int NOT NULL , first_name string, last_name string, full_name string, gender string)
+LOCATION 's3://karthilknani/dummy/';
+
+INSERT into customers_dummy (id,first_name,last_name,full_name) values
+(101,'manasa', 'choudam', 'manasa Choudam', 'Female')
+(null,'Phani', 'dhar', 'Phanidhar', 'Unknown')
+
+
+
+
+
+FOREIGN KEY- to relate two tables
+create external table customers_data.customers_dummy
+(customer_id int NOT NULL , first_name string, last_name string, full_name string, gender string)
+LOCATION 's3://karthilknani/dummy/';
+
+create external table customers_data.customer_orders
+(orderid int NOT NULL , product string, price int, quantity int, customer_id string
+FOreign key(customer_id) references customers_dummy(customer_id)
+LOCATION 's3://karthilknani/dummy/';
